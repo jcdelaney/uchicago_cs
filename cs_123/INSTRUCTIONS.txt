@@ -1,0 +1,23 @@
+===
+INSTRUCTIONS
+===
+The basic work flow for this prototype is get_data.py -> prep_data.py -> logistic.r
+Our data is pulled from a private ftp server that contains raw csv files of flight information.
+We have included get_data.py so that you can see our script but for security reasons we cannot
+post the login information to a public repo.
+
+===
+USAGE
+===
+Assuming that flight_data.db is in the local director we can excecute prep_data.py from the
+terminal by running
+
+prep_data.py delta_t
+
+where delta_t is the period of time over which fare difference is calculated. We recommend using
+3 as a default value. Values large than 7 can result in very few entries having valid fare
+differences
+
+This serves to generate a new database that has all the data required for analysis including the
+regressand. Logistic.r can be ran from the terminal to output the classification error of the
+generated model. To see more detailed results see the usage section of logistic.r

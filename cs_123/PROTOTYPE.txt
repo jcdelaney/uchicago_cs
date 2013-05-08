@@ -1,0 +1,73 @@
+===
+Prototype Overview
+===
+
+Our project prototype is comprised of two python scripts to handle data processing and
+an R script for data analysis. Currently, the only input for the prototype is the time
+delta used to calculate the differences between airline fare prices. That input is used
+to create an additional column in our dataset, a binary variable indicating whether or
+not a given flight's fare increased or decreased over the given time delta which is the
+dependent variable in our model.
+
+The data in our csv files was scraped from a variety of travel websites and compiled by 
+an independent company, QL2, that specializes in data scraping. Despite being 
+professionally prepared, our data is not necessarily complete because of a decision to 
+scrape data further into the future at the expense of ensuring that every flight has 
+fare quotes for large contiguous periods of time. This presented problems in our later 
+analysis because, when generating our binary variable indicating whether a fare price 
+has increased or decreased over a given time period, some flights have no fare entries 
+x days into the future with which to compare to the current fare price.
+
+Data processing consists primarily of reading data from csv files and adding that data
+to a local database. This consists of properly formatting data as the correct type so
+that it can be more easily analyzed in R. The only significant preprocessing in the 
+process is the generation of the dependent variable in our model. This was achieved by
+creating a nested dictionary to expedite the process of searching for future fare prices
+so that the change in fare can be calculated.
+
+Once the data has been processed, we use R’s built in methods to fit a logistic regression
+to our data. This regression serves primarily as a classifier for our dataset rather than
+as an argument for a relation between two given variables. This is due in part to the
+fact that the regression we are running is designed to be a naive attempt as a model 
+rather than a serious attempt at modeling flight prices. We feel that this prototype is
+most useful as a baseline metric with which to compare future models to.
+
+Unfortunately, this prototype hasn't shed much light on our project beyond establishing
+a baseline for future models. This is because this model has failed to be a robust model
+for a relationship between the covariates and our dependent variable. When we look at
+model diagnostics such as normality of the residuals or independence of the residuals
+and fitted values, we fail to observe these characteristics implying that the underlying
+assumptions necessary for statistical inference from the model. 
+
+In many ways the naive construction of our model contributed to the inefficacy of this
+model. Specifically, by choosing to include multiple factors as covariates such as
+airline route, days to departure, or airline, we introduced a large number of binary
+dummy variables into our model which resulted in a design matrix that was not full rank.
+This implies that we have chosen to include too many factors into our model because some
+combinations of factors describe only one data point rather than a collection. This
+leads us to conclude that we could significantly improve our model by identifying similar
+factors and grouping them together.
+
+Viewing our model as a baseline, we can compare the classification error to future 
+models as the rate to beat for future models. In addition, despite its inability to 
+speak to the relationship between the covariates and our dependent variable, the model
+identifies many of the factors including current fare as statistically significant in 
+the model. This gives us indications of which variables we should consider as candidates 
+to be part of more serious future models.
+
+This has significantly affected our approach to this project because it has given us a
+basis on which to conduct future analysis. When starting this project, we were of the
+mindset that we could get at this problem through a combination of clever modeling and
+luck. Now we are taking a more serious approach to the data by more rigorously
+identifying factors that may play a role in our model. Our goals now are to identify
+a set of factors which we think play a significant role in predicting the change in
+fare price and then test those hypotheses.
+
+With this in mind, looking forward, we see the main obstacles in our analysis center
+on gaining better familiarity with the technical tools required to do our analysis.
+Thus far the most significant obstacle we have encountered have been finding the
+appropriate line of analysis to take with our data. As a secondary obstacle, we have
+run into the technical problems of attempting implement our analysis in R which has
+proved to be more difficult than expected. That said, we have made significant
+progress toward overcoming both of these obstacles and are confident about proceeding
+further.

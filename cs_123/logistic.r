@@ -18,8 +18,11 @@
 # 
 library(RSQLite)
 library(ggplot2)
-library(gdata)
+#library(gdata)
 library(boot)
+library(MASS)
+setwd('C:/Users/John/Dropbox/CS/BitBend/bitbend_data_test/')
+
 
 query_db <- function(sql,db) {
 
@@ -29,26 +32,30 @@ query_db <- function(sql,db) {
 
 }
 
-parse_data <- function(db) {
+parse_data <- function(db,sample_size) {
 
 	print('Loading Data')
-  	data <- query_db('SELECT QDATE, MARKET, CXR, DDATE, DTIME, DFLIGHT, FARE, DFARE from flightdata',db)
+  data <- query_db('SELECT QDATE, MARKET, CXR, DDATE, DTIME, DFLIGHT, FARE, DFARE from flightdata',db)
 
 	#Convert columns to appropriate data type
-  	data$QDATE <- as.Date(as.character(data$QDATE), '%Y%m%d%H%M')
+  data$QDATE <- as.Date(as.character(data$QDATE), '%Y%m%d%H%M')
 	data$DDATE <- as.Date(data$DDATE, '%Y-%m-%d')
-  	data$DTIME <- as.numeric(substring(data$DTIME,0,2))
+  data$DTIME <- as.numeric(substring(data$DTIME,0,2))
 	data$DFLIGHT <- as.numeric(data$DFLIGHT)
 	data$FARE <- as.numeric(data$FARE)
 	data$DFARE <- as.numeric(ifelse(data$DFARE < 0, NA_character_, as.numeric(data$DFARE)))
 
 	#Generate additional columns
   print('Generating Additional Columns')
-  	data$DTD <- as.numeric(difftime(data$DDATE,data$QDATE,units='days'))
+  data$DTD <- as.numeric(difftime(data$DDATE,data$QDATE,units='days'))
 	data$QDAY <- weekdays(data$QDATE)
 	data$DDAY <- weekdays(data$DDATE)
-  	data$DCHUNK <- ifelse(data$DTIME <= 9, 1, ifelse(data$DTIME <= 12, 2, ifelse(data$DTIME <= 17, 3, 4))) 
+  data$DCHUNK <- ifelse(data$DTIME <= 9, 1, ifelse(data$DTIME <= 12, 2, ifelse(data$DTIME <= 17, 3, 4))) 
 	data$DMONTH <- as.numeric(strftime(data$DDATE,'%m'))
+  
+  data = data[sample(nrow(data), sample_size), ]
+  data = data[rowSums(is.na(data)) == 0,]
+  
 
 	#Tag Factor columns
   print('Generating Factors')
@@ -61,14 +68,26 @@ parse_data <- function(db) {
 	data$DCHUNK <- factor(data$DCHUNK)
 	data$DMONTH <- factor(data$DMONTH)
   
-	return(data[rowSums(is.na(data)) == 0,])
+	return(data)
 }
 
-#Import Data
-data <- parse_data('flight_data_3.db')
-#Generate Logistic Model
+data <- parse_data('flight_data_3.db', 5000)
+
 data.glm <- glm(DFARE ~ MARKET + CXR + QDAY + DDAY + DCHUNK + DMONTH + DTD + FARE, data = data, family = "binomial")
-cost <- function(r, pi=0) mean(abs(r-pi)>0.5)
+
+data.glm_1 <- glm(DFARE ~ DTD + FARE, data = data, family = "binomial")
+data.glm_2 <- glm(DFARE ~ MARKET + CXR + DDAY + FARE, data = data, family = "binomial")
+data.glm_3 <- glm(DFARE ~ MARKET*DDAY + DTD + FARE, data = data, family = "binomial")
+data.glm_4 <- glm(DFARE ~ MARKET + DDAY*DCHUNK + DTD + FARE, data = data, family = "binomial")
+data.glm_5 <- glm(DFARE ~ MARKET + CXR + QDAY + DDAY + DCHUNK + FARE, data = data, family = "binomial")
+
+data.ridge <- lm.ridge(DFARE ~ MARKET + CXR + QDAY + DDAY + DCHUNK + DMONTH + DTD + FARE, data = data, family = "binomial", lambda = seq(0,0.1,0.001))
+
+#Import Data
+#data <- parse_data('flight_data_3.db')
+#Generate Logistic Model
+#data.glm <- glm(DFARE ~ MARKET + CXR + QDAY + DDAY + DCHUNK + DMONTH + DTD + FARE, data = data, family = "binomial")
+#cost <- function(r, pi=0) mean(abs(r-pi)>0.5)
 #Compute Classifier Error
-data.glm.error <- cv.glm(data, logit, cost, K=5)
-print(data.glm.error$delta)
+#data.glm.error <- cv.glm(data, logit, cost, K=5)
+#print(data.glm.error$delta)

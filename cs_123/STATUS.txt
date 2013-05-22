@@ -1,0 +1,47 @@
+=====================
+Project Status Report
+=====================
+John Delaney
+Andres Fonseca
+
+Since our project presentation we have been focusing on two main areas. First, we have been trying
+to come up with a more robust model for predicting flight price fluctuations. This has proved to
+be our biggest problem and the area where we have seen the least progress. So far, every
+combination of the factors we isolated in our data has yielded results that were comparable to our
+initial 'naive' model which included all factors. The error rate for our predictor has stayed
+right around 23% for most of the models we have tried with small decreases when we include only
+one or two variables. For all of these models, when looking at the diagnostic plots we observe
+patterns which indicate that the assumptions necessary for statistical inference are not being
+met. The implication of this is that, as our data currently stands, the factors we have
+identified do not appear to be significant factors for predicting the change in flight price. 
+We are still trying to think of ways to approach the data from a different angle but so far
+we have not found anything that provides a significant boost in performance. 
+
+One of the methods that we pursued was to employ a ridge regression instead of a normal logistic
+regression. The ridge regression works by placing a penalty on the size of each coefficient beta 
+during the ordinary least squares minimization. The result of this is that we now longer require 
+that our factor matrix be of full rank because the term to be inverted in our expression for beta
+now includes a linear term. Despite this, we observed the same problems we saw with our logistic
+regression. This leads us to believe that we must either find some way to creatively transform
+our data either by normalization or new approaches to factors, or by taking an entirely new
+approach to the data. That said, we have managed to stumble upon one significant result which
+was a fairly striking example of how flight price volatility increases as the departure date gets
+nearer. We took the standard deviation of flight prices at day i out for each market, averaged
+across markets and then plotted this average standard deviation against days till departure. The
+result was a stark linear increase in the volatility as the departure date neared. We see this as
+a small victory because we have been able to confirm a pre-existing assumption we had about our
+data.
+
+The second area we have been focusing on has been putting ourselves in a position to scale
+whatever model we choose to be able to utilize the AWS framework. This has so far involved porting
+all of our existing code from R in to python so that we can utilize the mrjob library. In addition
+the increased flexibility of python will allow us to work in a language that we are more familiar
+with and which has a wider scope of existing libraries. With this in mind, we haven't chosen to
+completely abandon R. One of the main problems we have run into porting our code into python has
+been managing the memory overhead involved in loading our dataset into memory and then performing
+the necessary manipulations. In order to mimic the functionality of R we have begun using the
+pandas library for python in order to continue working with our data as a data frame like object.
+We are still in the process of learning pandas and, as a result, we are not completely familiar
+with best practices for how to create and manipulate data frames. As a result, our python port is
+slower than the equivalent R code and we have not yet found a way to get around python throwing a
+memory error when we try to generate dummy variables for our regression.
